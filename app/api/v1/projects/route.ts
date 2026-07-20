@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getProjectListItems } from "@/lib/project-store";
+
+export const dynamic = "force-dynamic";
 import type { ProjectsListResponse } from "@/lib/types";
 
 /**

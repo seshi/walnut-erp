@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { findProject, updateProject, type UpdateProjectInput } from "@/lib/project-store";
 
+export const dynamic = "force-dynamic";
+
 /** GET /api/v1/projects/:id */
 export async function GET(
   _req: NextRequest,
