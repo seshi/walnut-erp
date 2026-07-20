@@ -33,10 +33,10 @@ export default async function CutListPage({ params }: { params: { id: string } }
   let costEstimate = null;
   if (version && cabinets.length > 0) {
     // Get unique material IDs from cut list items + cabinets
-    const matIds = [...new Set([
+    const matIds = Array.from(new Set([
       ...version.items.map((i) => i.materialId),
       ...cabinets.flatMap((c) => [c.carcassMaterialId, c.backMaterialId, c.doorMaterialId, c.drawerFrontMaterialId].filter(Boolean) as string[]),
-    ])];
+    ]));
     const materials = await db.material.findMany({
       where: { id: { in: matIds } },
       select: { id: true, code: true, name: true, sheetLengthMm: true, sheetWidthMm: true, costPerSheet: true, wastagePct: true },
