@@ -1,0 +1,30 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 30 20% 97%;
+    --foreground: 20 14% 10%;
+    --muted: 30 10% 92%;
+    --muted-foreground: 20 8% 46%;
+    --border: 30 8% 88%;
+    --ring: 27 57% 18%;
+    --walnut: #3D2B1F;
+    --gold: #B8860B;
+  }
+
+  * {
+    @apply border-[hsl(var(--border))];
+  }
+
+  body {
+    @apply bg-stone-50 text-stone-900 font-sans antialiased;
+  }
+}
+
+@layer utilities {
+  .font-mono-data {
+    font-family: "JetBrains Mono", monospace;
+  }
+}

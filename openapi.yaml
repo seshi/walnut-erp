@@ -1,0 +1,281 @@
+openapi: "3.1.0"
+info:
+  title: Walnut Studios ERP API
+  version: "1.0.0"
+  description: |
+    REST API for the Walnut Studios manufacturing ERP.
+    All endpoints are prefixed with `/api/v1`.
+    Mock data is returned in development; replace the data layer with Prisma + PostgreSQL for production.
+
+servers:
+  - url: http://localhost:3000/api/v1
+    description: Local development
+  - url: https://walnut-erp.railway.app/api/v1
+    description: Staging
+
+tags:
+  - name: Projects
+    description: Project Master – the central entity of the ERP
+
+# ─── Reusable components ────────────────────────────────────────────────────────
+components:
+  schemas:
+
+    ProjectStatus:
+      type: string
+      enum:
+        - enquiry
+        - design
+        - approved
+        - in_production
+        - ready
+        - dispatched
+        - installed
+        - closed
+      description: Controlled workflow state machine for a project.
+
+    UserRole:
+      type: string
+      enum:
+        - admin
+        - director
+        - designer
+        - production_manager
+        - shop_floor
+        - procurement
+        - viewer
+
+    User:
+      type: object
+      required: [id, name, email, role]
+      properties:
+        id:          { type: string, example: usr_01 }
+        name:        { type: string, example: Sarah Chen }
+        email:       { type: string, format: email }
+        role:        { $ref: "#/components/schemas/UserRole" }
+        avatarInitials: { type: string, example: SC }
+
+    Customer:
+      type: object
+      required: [id, companyName, contactName, email]
+      properties:
+        id:          { type: string, example: cust_01 }
+        companyName: { type: string, example: The Morrison Family }
+        contactName: { type: string, example: James Morrison }
+        email:       { type: string, format: email }
+        phone:       { type: string, example: "07700 900142" }
+
+    Room:
+      type: object
+      required: [id, projectId, name, sequenceOrder]
+      properties:
+        id:            { type: string }
+        projectId:     { type: string }
+        name:          { type: string, example: Kitchen }
+        sequenceOrder: { type: integer, minimum: 1 }
+
+    Project:
+      type: object
+      required:
+        - id
+        - projectCode
+        - customer
+        - siteAddress
+        - designer
+        - status
+        - startDate
+        - deliveryDate
+        - enquiryDate
+        - rooms
+        - estimatedValue
+        - createdAt
+        - updatedAt
+        - createdBy
+      properties:
+        id:
+          type: string
+          description: UUID v7 in production; sequential string in mock
+          example: proj_01
+        projectCode:
+          type: string
+          pattern: "^WS-\\d{4}-\\d{4}$"
+          example: WS-2026-0138
+        customer:      { $ref: "#/components/schemas/Customer" }
+        siteAddress:   { type: string, example: "14 Birchwood Lane, Guildford, Surrey, GU3 4PQ" }
+        designer:      { $ref: "#/components/schemas/User" }
+        productionManager:
+          allOf:
+            - { $ref: "#/components/schemas/User" }
+          nullable: true
+        status:        { $ref: "#/components/schemas/ProjectStatus" }
+        enquiryDate:   { type: string, format: date, example: "2026-05-12" }
+        startDate:     { type: string, format: date, example: "2026-06-16" }
+        deliveryDate:  { type: string, format: date, example: "2026-07-28" }
+        rooms:
+          type: array
+          items: { $ref: "#/components/schemas/Room" }
+          minItems: 1
+        estimatedValue:
+          type: integer
+          description: Project value in GBP (whole pounds in mock; store as pence integer in production)
+          example: 28500
+        internalNotes:
+          type: string
+          nullable: true
+        createdAt:  { type: string, format: date-time }
+        updatedAt:  { type: string, format: date-time }
+        createdBy:  { type: string, description: User ID of creator }
+
+    ProjectListItem:
+      type: object
+      description: Lightweight projection used in the project list table.
+      required:
+        - id
+        - projectCode
+        - customerName
+        - siteAddress
+        - status
+        - designerName
+        - roomCount
+        - estimatedValue
+        - startDate
+        - deliveryDate
+        - enquiryDate
+        - isOverdue
+      properties:
+        id:             { type: string }
+        projectCode:    { type: string, example: WS-2026-0138 }
+        customerName:   { type: string, example: The Morrison Family }
+        siteAddress:    { type: string }
+        status:         { $ref: "#/components/schemas/ProjectStatus" }
+        designerName:   { type: string }
+        roomCount:      { type: integer }
+        estimatedValue: { type: integer }
+        startDate:      { type: string, format: date }
+        deliveryDate:   { type: string, format: date }
+        enquiryDate:    { type: string, format: date }
+        isOverdue:      { type: boolean }
+
+    ProjectKpis:
+      type: object
+      properties:
+        totalActive:          { type: integer, example: 6 }
+        pipelineValue:        { type: integer, example: 248950 }
+        inProduction:         { type: integer, example: 1 }
+        overdueCount:         { type: integer, example: 1 }
+        quoteConversionRate:  { type: number, format: float, minimum: 0, maximum: 100, example: 86 }
+        byStatus:
+          type: object
+          additionalProperties: { type: integer }
+          example:
+            enquiry: 1
+            design: 2
+            approved: 1
+            in_production: 1
+            ready: 1
+            dispatched: 1
+            installed: 1
+
+    ListMeta:
+      type: object
+      properties:
+        total:    { type: integer }
+        page:     { type: integer }
+        pageSize: { type: integer }
+
+    ErrorResponse:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: object
+          required: [code, message]
+          properties:
+            code:    { type: string, example: NOT_FOUND }
+            message: { type: string, example: "Project 'proj_99' not found." }
+
+  parameters:
+    ProjectId:
+      name: id
+      in: path
+      required: true
+      schema: { type: string }
+      description: Project ID (e.g. `proj_01`) or project code (e.g. `WS-2026-0138`)
+
+# ─── Paths ──────────────────────────────────────────────────────────────────────
+paths:
+
+  /projects:
+    get:
+      tags: [Projects]
+      summary: List projects
+      description: Returns a paginated, filterable list of project summary items.
+      operationId: listProjects
+      parameters:
+        - name: status
+          in: query
+          schema: { $ref: "#/components/schemas/ProjectStatus" }
+          description: Filter by status
+        - name: search
+          in: query
+          schema: { type: string }
+          description: Partial match on project code, customer name, or site address
+        - name: page
+          in: query
+          schema: { type: integer, default: 1, minimum: 1 }
+        - name: pageSize
+          in: query
+          schema: { type: integer, default: 20, minimum: 1, maximum: 100 }
+      responses:
+        "200":
+          description: Paginated list of projects
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data, meta]
+                properties:
+                  data:
+                    type: array
+                    items: { $ref: "#/components/schemas/ProjectListItem" }
+                  meta: { $ref: "#/components/schemas/ListMeta" }
+
+  /projects/kpis:
+    get:
+      tags: [Projects]
+      summary: Project KPI snapshot
+      description: Returns aggregate KPI data for the dashboard tiles.
+      operationId: getProjectKpis
+      responses:
+        "200":
+          description: KPI snapshot
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data: { $ref: "#/components/schemas/ProjectKpis" }
+
+  /projects/{id}:
+    get:
+      tags: [Projects]
+      summary: Get project by ID
+      operationId: getProject
+      parameters:
+        - $ref: "#/components/parameters/ProjectId"
+      responses:
+        "200":
+          description: Full project detail
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data: { $ref: "#/components/schemas/Project" }
+        "404":
+          description: Project not found
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ErrorResponse" }
