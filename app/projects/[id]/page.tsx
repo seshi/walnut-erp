@@ -20,7 +20,7 @@ import {
 } from "lucide-react";
 
 export async function generateMetadata({ params }: { params: { id: string } }) {
-  const project = findProject(params.id);
+  const project = await findProject(params.id);
   return { title: project ? `${project.projectCode} – Walnut Studios ERP` : "Project not found" };
 }
 
@@ -67,8 +67,8 @@ function StatusTimeline({ current }: { current: string }) {
   );
 }
 
-export default function ProjectDetailPage({ params }: { params: { id: string } }) {
-  const project = findProject(params.id);
+export default async function ProjectDetailPage({ params }: { params: { id: string } }) {
+  const project = await findProject(params.id);
   if (!project) notFound();
 
   return (

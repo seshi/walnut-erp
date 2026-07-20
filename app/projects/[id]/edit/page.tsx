@@ -8,12 +8,12 @@ import { StatusBadge } from "@/components/projects/status-badge";
 import { ArrowLeft } from "lucide-react";
 
 export async function generateMetadata({ params }: { params: { id: string } }) {
-  const project = findProject(params.id);
+  const project = await findProject(params.id);
   return { title: project ? `Edit ${project.projectCode} – Walnut Studios ERP` : "Project not found" };
 }
 
-export default function EditProjectPage({ params }: { params: { id: string } }) {
-  const project = findProject(params.id);
+export default async function EditProjectPage({ params }: { params: { id: string } }) {
+  const project = await findProject(params.id);
   if (!project) notFound();
 
   const designers          = MOCK_USERS.filter((u) => ["designer", "admin", "director"].includes(u.role));

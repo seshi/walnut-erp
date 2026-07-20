@@ -6,13 +6,14 @@ import { Plus } from "lucide-react";
 
 export const metadata = { title: "Projects – Walnut Studios ERP" };
 
-export default function ProjectsPage() {
-  const kpis     = getProjectKpis();
-  const projects = getProjectListItems();
+export default async function ProjectsPage() {
+  const [kpis, projects] = await Promise.all([
+    getProjectKpis(),
+    getProjectListItems(),
+  ]);
 
   return (
     <div className="flex flex-col gap-6 p-6">
-      {/* Page header */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-xl font-semibold text-stone-900">Projects</h1>
@@ -26,10 +27,7 @@ export default function ProjectsPage() {
         </Button>
       </div>
 
-      {/* KPI tiles */}
       <KpiTiles kpis={kpis} />
-
-      {/* Project list */}
       <ProjectList projects={projects} />
     </div>
   );

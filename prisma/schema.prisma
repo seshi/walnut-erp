@@ -1,0 +1,96 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─── Enums ────────────────────────────────────────────────────────────────────
+
+enum ProjectStatus {
+  enquiry
+  design
+  approved
+  in_production
+  ready
+  dispatched
+  installed
+  closed
+}
+
+enum UserRole {
+  admin
+  director
+  designer
+  production_manager
+  shop_floor
+  procurement
+  viewer
+}
+
+// ─── Models ───────────────────────────────────────────────────────────────────
+
+model User {
+  id             String   @id @default(cuid())
+  name           String
+  email          String   @unique
+  role           UserRole
+  avatarInitials String   @db.VarChar(3)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  designedProjects  Project[] @relation("Designer")
+  managedProjects   Project[] @relation("ProductionManager")
+  createdProjects   Project[] @relation("CreatedBy")
+}
+
+model Customer {
+  id          String   @id @default(cuid())
+  companyName String
+  contactName String
+  email       String
+  phone       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  projects Project[]
+}
+
+model Project {
+  id              String        @id @default(cuid())
+  projectCode     String        @unique
+  siteAddress     String
+  status          ProjectStatus @default(enquiry)
+  enquiryDate     DateTime      @db.Date
+  startDate       DateTime      @db.Date
+  deliveryDate    DateTime      @db.Date
+  // Stored as whole pounds (GBP). Migrate to pence (Int) when invoicing is wired.
+  estimatedValue  Int
+  internalNotes   String?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  customerId          String
+  customer            Customer @relation(fields: [customerId], references: [id])
+
+  designerId          String
+  designer            User     @relation("Designer", fields: [designerId], references: [id])
+
+  productionManagerId String?
+  productionManager   User?    @relation("ProductionManager", fields: [productionManagerId], references: [id])
+
+  createdById         String
+  createdBy           User     @relation("CreatedBy", fields: [createdById], references: [id])
+
+  rooms Room[]
+}
+
+model Room {
+  id            String  @id @default(cuid())
+  name          String
+  sequenceOrder Int
+  projectId     String
+  project       Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+}

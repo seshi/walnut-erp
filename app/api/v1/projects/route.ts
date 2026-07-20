@@ -18,7 +18,7 @@ export async function GET(req: NextRequest) {
   const page         = Math.max(1, parseInt(searchParams.get("page") ?? "1", 10));
   const pageSize     = Math.min(100, Math.max(1, parseInt(searchParams.get("pageSize") ?? "20", 10)));
 
-  let items = getProjectListItems();
+  let items = await getProjectListItems();
 
   if (statusFilter) {
     items = items.filter((p) => p.status === statusFilter);
@@ -45,10 +45,6 @@ export async function GET(req: NextRequest) {
   return NextResponse.json(body);
 }
 
-/**
- * GET /api/v1/projects?kpis=1  — alternative: dedicated /api/v1/projects/kpis
- * Kept on same route for convenience.
- */
 export async function HEAD() {
   return new NextResponse(null, { status: 200 });
 }

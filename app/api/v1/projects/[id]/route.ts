@@ -6,7 +6,7 @@ export async function GET(
   _req: NextRequest,
   { params }: { params: { id: string } }
 ) {
-  const project = findProject(params.id);
+  const project = await findProject(params.id);
   if (!project) {
     return NextResponse.json(
       { error: { code: "NOT_FOUND", message: `Project '${params.id}' not found.` } },
@@ -31,7 +31,7 @@ export async function PATCH(
     );
   }
 
-  const result = updateProject(params.id, body);
+  const result = await updateProject(params.id, body);
 
   if (!result.ok) {
     if (result.error.code === "NOT_FOUND") {
