@@ -57,8 +57,8 @@ export function summariseCutList(version: CutListVersion): CutListSummary {
     const area = item.lengthMm * item.widthMm * item.qty;
     byMaterial.set(item.materialId, (byMaterial.get(item.materialId) ?? 0) + area);
   }
-  for (const area of byMaterial.values()) {
+  byMaterial.forEach((area) => {
     estimatedSheets += Math.ceil(area / STANDARD_SHEET_AREA);
-  }
+  });
   return { totalParts, totalQty, uniqueMaterials, estimatedSheets };
 }
