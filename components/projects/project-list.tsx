@@ -122,7 +122,7 @@ export function ProjectList({ projects }: { projects: ProjectListItem[] }) {
                     <div className="flex items-center gap-1.5">
                       <StatusBadge status={p.status} />
                       {p.isOverdue && (
-                        <AlertTriangle className="h-3.5 w-3.5 text-red-500 shrink-0" title="Overdue" />
+                        <AlertTriangle className="h-3.5 w-3.5 text-red-500 shrink-0" aria-label="Overdue" />
                       )}
                     </div>
                   </td>
