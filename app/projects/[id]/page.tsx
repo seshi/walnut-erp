@@ -198,27 +198,29 @@ export default async function ProjectDetailPage({ params }: { params: { id: stri
             <CardContent className="pt-0">
               <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
                 {[
-                  { label: "Configurator", icon: DoorOpen,      href: "#",                                      live: false },
+                  { label: "Configurator", icon: DoorOpen,      href: null,                                     live: false },
                   { label: "Cut List",     icon: ClipboardList, href: `/projects/${project.id}/cut-list`,        live: true  },
-                  { label: "Costing",      icon: Banknote,      href: "#",                                      live: false },
-                  { label: "Production",   icon: Hammer,        href: "#",                                      live: false },
-                ].map(({ label, icon: Icon, href, live }) => (
-                  <Link
-                    key={label}
-                    href={href}
-                    aria-disabled={!live}
-                    onClick={!live ? (e) => e.preventDefault() : undefined}
-                    className={`flex flex-col items-center gap-2 rounded-lg border p-3 text-center text-xs font-medium transition-colors ${
-                      live
-                        ? "border-walnut-200 bg-walnut-50 text-walnut-600 hover:bg-walnut-100"
-                        : "border-stone-200 bg-stone-50 text-stone-400 cursor-not-allowed"
-                    }`}
-                  >
-                    <Icon className={`h-5 w-5 ${live ? "text-walnut-400" : "text-stone-300"}`} />
-                    {label}
-                    {!live && <Badge variant="outline" className="text-[9px]">Coming soon</Badge>}
-                  </Link>
-                ))}
+                  { label: "Costing",      icon: Banknote,      href: null,                                     live: false },
+                  { label: "Production",   icon: Hammer,        href: null,                                     live: false },
+                ].map(({ label, icon: Icon, href, live }) => {
+                  const tileClass = `flex flex-col items-center gap-2 rounded-lg border p-3 text-center text-xs font-medium transition-colors ${
+                    live
+                      ? "border-walnut-200 bg-walnut-50 text-walnut-600 hover:bg-walnut-100"
+                      : "border-stone-200 bg-stone-50 text-stone-400 cursor-not-allowed"
+                  }`;
+                  const content = (
+                    <>
+                      <Icon className={`h-5 w-5 ${live ? "text-walnut-400" : "text-stone-300"}`} />
+                      {label}
+                      {!live && <Badge variant="outline" className="text-[9px]">Coming soon</Badge>}
+                    </>
+                  );
+                  return live && href ? (
+                    <Link key={label} href={href} className={tileClass}>{content}</Link>
+                  ) : (
+                    <span key={label} className={tileClass}>{content}</span>
+                  );
+                })}
               </div>
             </CardContent>
           </Card>
