@@ -60,7 +60,7 @@ export async function updateStage(
       status,
       notes: notes !== undefined ? notes : undefined,
       startedAt:   status === "in_progress" ? now : status === "pending" ? null : undefined,
-      completedAt: status === "completed"   ? now : status !== "completed" ? null : undefined,
+      completedAt: status === "completed"   ? now : null,
     },
     include: { assignedTo: { select: { name: true } } },
   });
