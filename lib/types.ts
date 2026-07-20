@@ -240,3 +240,129 @@ export interface ProjectKpis {
   byStatus: Record<ProjectStatus, number>;
   quoteConversionRate: number;
 }
+
+// ─── Configurator ─────────────────────────────────────────────────────────────
+
+export type CabinetType =
+  | "base_cabinet"
+  | "wall_cabinet"
+  | "tall_unit"
+  | "drawer_unit"
+  | "open_shelf";
+
+export interface Cabinet {
+  id: string;
+  cabinetCode: string;
+  description?: string;
+  type: CabinetType;
+  widthMm: number;
+  heightMm: number;
+  depthMm: number;
+  qty: number;
+  doorCount: number;
+  drawerCount: number;
+  shelfCount: number;
+  finishSpec?: string;
+  notes?: string;
+  sequenceOrder: number;
+  projectId: string;
+  roomId?: string;
+  roomName?: string;
+  carcassMaterialId: string;
+  carcassMaterialCode: string;
+  carcassMaterialName: string;
+  backMaterialId?: string;
+  doorMaterialId?: string;
+  doorMaterialCode?: string;
+  drawerFrontMaterialId?: string;
+  hingeHardwareId?: string;
+  runnerHardwareId?: string;
+  handleHardwareId?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateCabinetInput {
+  cabinetCode: string;
+  description?: string;
+  type: CabinetType;
+  widthMm: number;
+  heightMm: number;
+  depthMm: number;
+  qty: number;
+  doorCount: number;
+  drawerCount: number;
+  shelfCount: number;
+  finishSpec?: string;
+  notes?: string;
+  roomId?: string;
+  carcassMaterialId: string;
+  backMaterialId?: string;
+  doorMaterialId?: string;
+  drawerFrontMaterialId?: string;
+  hingeHardwareId?: string;
+  runnerHardwareId?: string;
+  handleHardwareId?: string;
+}
+
+// ─── Production ───────────────────────────────────────────────────────────────
+
+export type ProductionStageName =
+  | "cutting"
+  | "edge_banding"
+  | "drilling_cnc"
+  | "assembly"
+  | "finishing"
+  | "quality_check"
+  | "dispatch";
+
+export type StageStatus = "pending" | "in_progress" | "completed" | "blocked";
+
+export interface ProductionStage {
+  id: string;
+  stage: ProductionStageName;
+  status: StageStatus;
+  startedAt?: string;
+  completedAt?: string;
+  notes?: string;
+  projectId: string;
+  assignedToId?: string;
+  assignedToName?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+// ─── Costing ──────────────────────────────────────────────────────────────────
+
+export interface MaterialCostLine {
+  materialId: string;
+  materialCode: string;
+  materialName: string;
+  totalAreaMm2: number;
+  sheetsRequired: number;
+  costPerSheet: number;
+  wastagePct: number;
+  subtotal: number;
+}
+
+export interface HardwareCostLine {
+  hardwareId: string;
+  hardwareCode: string;
+  hardwareName: string;
+  qty: number;
+  unitCost: number;
+  subtotal: number;
+}
+
+export interface CostEstimate {
+  projectId: string;
+  projectCode: string;
+  versionNo: number;
+  materialLines: MaterialCostLine[];
+  hardwareLines: HardwareCostLine[];
+  materialTotal: number;
+  hardwareTotal: number;
+  labourEstimate: number;
+  grandTotal: number;
+  generatedAt: string;
+}

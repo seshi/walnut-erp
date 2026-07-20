@@ -62,6 +62,31 @@ enum CutListStatus {
   superseded
 }
 
+enum CabinetType {
+  base_cabinet
+  wall_cabinet
+  tall_unit
+  drawer_unit
+  open_shelf
+}
+
+enum ProductionStageName {
+  cutting
+  edge_banding
+  drilling_cnc
+  assembly
+  finishing
+  quality_check
+  dispatch
+}
+
+enum StageStatus {
+  pending
+  in_progress
+  completed
+  blocked
+}
+
 // ─── Models ───────────────────────────────────────────────────────────────────
 
 model User {
@@ -77,6 +102,7 @@ model User {
   managedProjects    Project[]        @relation("ProductionManager")
   createdProjects    Project[]        @relation("CreatedBy")
   generatedCutLists  CutListVersion[] @relation("CutListGenerator")
+  assignedStages     ProductionStage[] @relation("StageAssignee")
 }
 
 model Customer {
@@ -116,16 +142,19 @@ model Project {
   createdById         String
   createdBy           User     @relation("CreatedBy", fields: [createdById], references: [id])
 
-  rooms               Room[]
-  cutListVersions     CutListVersion[]
+  rooms            Room[]
+  cutListVersions  CutListVersion[]
+  cabinets         Cabinet[]
+  productionStages ProductionStage[]
 }
 
 model Room {
-  id            String  @id @default(cuid())
+  id            String    @id @default(cuid())
   name          String
   sequenceOrder Int
   projectId     String
-  project       Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  project       Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  cabinets      Cabinet[]
 }
 
 model Material {
@@ -147,7 +176,11 @@ model Material {
   createdAt        DateTime         @default(now())
   updatedAt        DateTime         @updatedAt
 
-  cutListItems CutListItem[]
+  cutListItems        CutListItem[]
+  carcassCabinets     Cabinet[]     @relation("CarcassMaterial")
+  backCabinets        Cabinet[]     @relation("BackMaterial")
+  doorCabinets        Cabinet[]     @relation("DoorMaterial")
+  drawerFrontCabinets Cabinet[]     @relation("DrawerFrontMaterial")
 }
 
 model Hardware {
@@ -165,6 +198,56 @@ model Hardware {
   active        Boolean          @default(true)
   createdAt     DateTime         @default(now())
   updatedAt     DateTime         @updatedAt
+
+  hingeCabinets  Cabinet[] @relation("CabinetHinge")
+  runnerCabinets Cabinet[] @relation("CabinetRunner")
+  handleCabinets Cabinet[] @relation("CabinetHandle")
+}
+
+model Cabinet {
+  id                    String      @id @default(cuid())
+  cabinetCode           String
+  description           String?
+  type                  CabinetType
+  widthMm               Int
+  heightMm              Int
+  depthMm               Int
+  qty                   Int         @default(1)
+  doorCount             Int         @default(0)
+  drawerCount           Int         @default(0)
+  shelfCount            Int         @default(0)
+  finishSpec            String?
+  notes                 String?
+  sequenceOrder         Int         @default(0)
+  createdAt             DateTime    @default(now())
+  updatedAt             DateTime    @updatedAt
+
+  projectId             String
+  project               Project     @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  roomId                String?
+  room                  Room?       @relation(fields: [roomId], references: [id])
+
+  carcassMaterialId     String
+  carcassMaterial       Material    @relation("CarcassMaterial", fields: [carcassMaterialId], references: [id])
+
+  backMaterialId        String?
+  backMaterial          Material?   @relation("BackMaterial", fields: [backMaterialId], references: [id])
+
+  doorMaterialId        String?
+  doorMaterial          Material?   @relation("DoorMaterial", fields: [doorMaterialId], references: [id])
+
+  drawerFrontMaterialId String?
+  drawerFrontMaterial   Material?   @relation("DrawerFrontMaterial", fields: [drawerFrontMaterialId], references: [id])
+
+  hingeHardwareId       String?
+  hingeHardware         Hardware?   @relation("CabinetHinge", fields: [hingeHardwareId], references: [id])
+
+  runnerHardwareId      String?
+  runnerHardware        Hardware?   @relation("CabinetRunner", fields: [runnerHardwareId], references: [id])
+
+  handleHardwareId      String?
+  handleHardware        Hardware?   @relation("CabinetHandle", fields: [handleHardwareId], references: [id])
 }
 
 model CutListVersion {
@@ -203,4 +286,23 @@ model CutListItem {
 
   materialId String
   material   Material @relation(fields: [materialId], references: [id])
+}
+
+model ProductionStage {
+  id           String              @id @default(cuid())
+  stage        ProductionStageName
+  status       StageStatus         @default(pending)
+  startedAt    DateTime?
+  completedAt  DateTime?
+  notes        String?
+  createdAt    DateTime            @default(now())
+  updatedAt    DateTime            @updatedAt
+
+  projectId    String
+  project      Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  assignedToId String?
+  assignedTo   User?   @relation("StageAssignee", fields: [assignedToId], references: [id])
+
+  @@unique([projectId, stage])
 }

@@ -198,10 +198,10 @@ export default async function ProjectDetailPage({ params }: { params: { id: stri
             <CardContent className="pt-0">
               <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
                 {[
-                  { label: "Configurator", icon: DoorOpen,      href: null,                                     live: false },
+                  { label: "Configurator", icon: DoorOpen,      href: `/projects/${project.id}/configurator`,   live: true  },
                   { label: "Cut List",     icon: ClipboardList, href: `/projects/${project.id}/cut-list`,        live: true  },
                   { label: "Costing",      icon: Banknote,      href: null,                                     live: false },
-                  { label: "Production",   icon: Hammer,        href: null,                                     live: false },
+                  { label: "Production",   icon: Hammer,        href: `/projects/${project.id}/production`,     live: true  },
                 ].map(({ label, icon: Icon, href, live }) => {
                   const tileClass = `flex flex-col items-center gap-2 rounded-lg border p-3 text-center text-xs font-medium transition-colors ${
                     live
