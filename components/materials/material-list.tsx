@@ -1,9 +1,10 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { formatCurrency, cn } from "@/lib/utils";
 import type { MaterialListItem, MaterialCategory } from "@/lib/types";
-import { Search, CheckCircle2, XCircle } from "lucide-react";
+import { Search, CheckCircle2, XCircle, Pencil } from "lucide-react";
 
 const CATEGORY_OPTIONS: { value: MaterialCategory | "all"; label: string }[] = [
   { value: "all",          label: "All" },
@@ -86,6 +87,7 @@ export function MaterialList({ materials }: { materials: MaterialListItem[] }) {
               <th className="px-4 py-3 hidden lg:table-cell w-20">Grain</th>
               <th className="px-4 py-3 hidden md:table-cell w-20 text-center">Lead</th>
               <th className="px-4 py-3 w-16 text-center">Active</th>
+              <th className="px-4 py-3 w-10" />
             </tr>
           </thead>
           <tbody className="divide-y divide-stone-100">
@@ -130,6 +132,14 @@ export function MaterialList({ materials }: { materials: MaterialListItem[] }) {
                       ? <CheckCircle2 className="h-4 w-4 text-emerald-500 mx-auto" />
                       : <XCircle      className="h-4 w-4 text-stone-300 mx-auto" />
                     }
+                  </td>
+                  <td className="px-4 py-3">
+                    <Link
+                      href={`/materials/${m.id}/edit`}
+                      className="flex h-7 w-7 items-center justify-center rounded text-stone-400 hover:bg-stone-200 hover:text-stone-700 transition-colors"
+                    >
+                      <Pencil className="h-3.5 w-3.5" />
+                    </Link>
                   </td>
                 </tr>
               ))

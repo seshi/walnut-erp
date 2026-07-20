@@ -303,7 +303,7 @@ export function ProjectForm({ project, designers, productionManagers }: ProjectF
           </div>
 
           <div>
-            <Label htmlFor="estimatedValue" required>Estimated Value (£)</Label>
+            <Label htmlFor="estimatedValue" required>Estimated Value (₹)</Label>
             <Input
               id="estimatedValue"
               type="number"

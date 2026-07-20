@@ -1,5 +1,17 @@
 import { db } from "./db";
-import type { Material, MaterialListItem, MaterialKpis, MaterialCategory } from "./types";
+import type { Material, MaterialListItem, MaterialKpis, MaterialCategory, GrainDirection } from "./types";
+
+export interface UpdateMaterialInput {
+  name: string;
+  supplier: string;
+  costPerSheet: number;
+  wastagePct: number;
+  grainDirection: GrainDirection;
+  edgeBandingCodes: string[];
+  minOrderQty: number;
+  leadTimeDays: number;
+  active: boolean;
+}
 
 function toDate(d: Date): string {
   return d.toISOString();
@@ -50,6 +62,29 @@ export async function getMaterialListItems(category?: string, activeOnly?: boole
 export async function findMaterial(id: string): Promise<Material | null> {
   const r = await db.material.findUnique({ where: { id } });
   return r ? mapMaterial(r) : null;
+}
+
+export async function updateMaterial(
+  id: string,
+  input: UpdateMaterialInput
+): Promise<{ ok: true; material: Material } | { ok: false; error: { code: string } }> {
+  const existing = await db.material.findUnique({ where: { id } });
+  if (!existing) return { ok: false, error: { code: "NOT_FOUND" } };
+  const updated = await db.material.update({
+    where: { id },
+    data: {
+      name: input.name,
+      supplier: input.supplier,
+      costPerSheet: input.costPerSheet,
+      wastagePct: input.wastagePct,
+      grainDirection: input.grainDirection,
+      edgeBandingCodes: input.edgeBandingCodes,
+      minOrderQty: input.minOrderQty,
+      leadTimeDays: input.leadTimeDays,
+      active: input.active,
+    },
+  });
+  return { ok: true, material: mapMaterial(updated) };
 }
 
 export async function getMaterialKpis(): Promise<MaterialKpis> {

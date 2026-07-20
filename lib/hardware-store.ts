@@ -1,6 +1,18 @@
 import { db } from "./db";
 import type { Hardware, HardwareListItem, HardwareKpis, HardwareCategory } from "./types";
 
+export interface UpdateHardwareInput {
+  name: string;
+  supplier: string;
+  unitCost: number;
+  uom: string;
+  finish: string;
+  loadRating: string;
+  minStockLevel: number;
+  reorderQty: number;
+  active: boolean;
+}
+
 function toDate(d: Date): string {
   return d.toISOString();
 }
@@ -45,6 +57,29 @@ export async function getHardwareListItems(category?: string, activeOnly?: boole
 export async function findHardware(id: string): Promise<Hardware | null> {
   const r = await db.hardware.findUnique({ where: { id } });
   return r ? mapHardware(r) : null;
+}
+
+export async function updateHardware(
+  id: string,
+  input: UpdateHardwareInput
+): Promise<{ ok: true; hardware: Hardware } | { ok: false; error: { code: string } }> {
+  const existing = await db.hardware.findUnique({ where: { id } });
+  if (!existing) return { ok: false, error: { code: "NOT_FOUND" } };
+  const updated = await db.hardware.update({
+    where: { id },
+    data: {
+      name: input.name,
+      supplier: input.supplier,
+      unitCost: input.unitCost,
+      uom: input.uom,
+      finish: input.finish || null,
+      loadRating: input.loadRating || null,
+      minStockLevel: input.minStockLevel,
+      reorderQty: input.reorderQty,
+      active: input.active,
+    },
+  });
+  return { ok: true, hardware: mapHardware(updated) };
 }
 
 export async function getHardwareKpis(): Promise<HardwareKpis> {
