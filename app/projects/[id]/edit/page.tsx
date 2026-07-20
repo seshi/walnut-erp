@@ -7,6 +7,8 @@ import { Button } from "@/components/ui/button";
 import { StatusBadge } from "@/components/projects/status-badge";
 import { ArrowLeft } from "lucide-react";
 
+export const dynamic = "force-dynamic";
+
 export async function generateMetadata({ params }: { params: { id: string } }) {
   const project = await findProject(params.id);
   return { title: project ? `Edit ${project.projectCode} – Walnut Studios ERP` : "Project not found" };

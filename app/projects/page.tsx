@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { getProjectKpis, getProjectListItems } from "@/lib/project-store";
 import { Plus } from "lucide-react";
 
+export const dynamic = "force-dynamic";
 export const metadata = { title: "Projects – Walnut Studios ERP" };
 
 export default async function ProjectsPage() {
