@@ -198,19 +198,25 @@ export default async function ProjectDetailPage({ params }: { params: { id: stri
             <CardContent className="pt-0">
               <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
                 {[
-                  { label: "Configurator",  icon: DoorOpen,      href: "#" },
-                  { label: "Cut List",      icon: ClipboardList, href: "#" },
-                  { label: "Costing",       icon: Banknote,      href: "#" },
-                  { label: "Production",    icon: Hammer,        href: "#" },
-                ].map(({ label, icon: Icon, href }) => (
+                  { label: "Configurator", icon: DoorOpen,      href: "#",                                      live: false },
+                  { label: "Cut List",     icon: ClipboardList, href: `/projects/${project.id}/cut-list`,        live: true  },
+                  { label: "Costing",      icon: Banknote,      href: "#",                                      live: false },
+                  { label: "Production",   icon: Hammer,        href: "#",                                      live: false },
+                ].map(({ label, icon: Icon, href, live }) => (
                   <Link
                     key={label}
                     href={href}
-                    className="flex flex-col items-center gap-2 rounded-lg border border-stone-200 bg-stone-50 p-3 text-center text-xs font-medium text-stone-500 hover:bg-stone-100 transition-colors"
+                    aria-disabled={!live}
+                    onClick={!live ? (e) => e.preventDefault() : undefined}
+                    className={`flex flex-col items-center gap-2 rounded-lg border p-3 text-center text-xs font-medium transition-colors ${
+                      live
+                        ? "border-walnut-200 bg-walnut-50 text-walnut-600 hover:bg-walnut-100"
+                        : "border-stone-200 bg-stone-50 text-stone-400 cursor-not-allowed"
+                    }`}
                   >
-                    <Icon className="h-5 w-5 text-stone-400" />
+                    <Icon className={`h-5 w-5 ${live ? "text-walnut-400" : "text-stone-300"}`} />
                     {label}
-                    <Badge variant="outline" className="text-[9px]">Coming soon</Badge>
+                    {!live && <Badge variant="outline" className="text-[9px]">Coming soon</Badge>}
                   </Link>
                 ))}
               </div>

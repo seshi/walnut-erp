@@ -19,7 +19,29 @@ export type UserRole =
   | "procurement"
   | "viewer";
 
-// ─── Core entities (mirrors DB schema — ready for Prisma ORM layer) ────────────
+export type MaterialCategory =
+  | "board"
+  | "veneer"
+  | "solid_timber"
+  | "laminate"
+  | "glass"
+  | "edge_banding";
+
+export type GrainDirection = "none" | "length" | "width";
+
+export type HardwareCategory =
+  | "hinges"
+  | "drawer_runners"
+  | "handles_knobs"
+  | "legs"
+  | "shelf_pins"
+  | "soft_close"
+  | "lighting"
+  | "other";
+
+export type CutListStatus = "draft" | "approved" | "superseded";
+
+// ─── Core entities ─────────────────────────────────────────────────────────────
 
 export interface User {
   id: string;
@@ -45,25 +67,91 @@ export interface Room {
 }
 
 export interface Project {
-  id: string;                    // UUID v7 in production
-  projectCode: string;           // WS-YYYY-NNNN
+  id: string;
+  projectCode: string;
   customer: Customer;
   siteAddress: string;
   designer: User;
   productionManager?: User;
   status: ProjectStatus;
-  startDate: string;             // ISO 8601
-  deliveryDate: string;          // ISO 8601
+  startDate: string;
+  deliveryDate: string;
   enquiryDate: string;
   rooms: Room[];
-  estimatedValue: number;        // GBP pence stored as integer in production
+  estimatedValue: number;
   internalNotes?: string;
   createdAt: string;
   updatedAt: string;
-  createdBy: string;             // user id
+  createdBy: string;
 }
 
-// ─── API response shapes ───────────────────────────────────────────────────────
+export interface Material {
+  id: string;
+  code: string;
+  name: string;
+  category: MaterialCategory;
+  supplier: string;
+  sheetLengthMm: number;
+  sheetWidthMm: number;
+  thicknessMm: number;
+  costPerSheet: number;
+  wastagePct: number;
+  grainDirection: GrainDirection;
+  edgeBandingCodes: string[];
+  active: boolean;
+  minOrderQty: number;
+  leadTimeDays: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface Hardware {
+  id: string;
+  code: string;
+  name: string;
+  category: HardwareCategory;
+  supplier: string;
+  unitCost: number;
+  uom: string;
+  finish?: string;
+  loadRating?: string;
+  minStockLevel: number;
+  reorderQty: number;
+  active: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CutListItem {
+  id: string;
+  partCode: string;
+  description: string;
+  lengthMm: number;
+  widthMm: number;
+  thicknessMm: number;
+  qty: number;
+  materialId: string;
+  materialCode: string;
+  materialName: string;
+  grainDir: GrainDirection;
+  edgeBanding: string;
+  finish?: string;
+  cabinetRef?: string;
+  notes?: string;
+}
+
+export interface CutListVersion {
+  id: string;
+  projectId: string;
+  projectCode: string;
+  versionNo: number;
+  status: CutListStatus;
+  generatedAt: string;
+  generatorName: string;
+  items: CutListItem[];
+}
+
+// ─── List / KPI projections ────────────────────────────────────────────────────
 
 export interface ProjectListItem {
   id: string;
@@ -80,20 +168,69 @@ export interface ProjectListItem {
   isOverdue: boolean;
 }
 
+export interface MaterialListItem {
+  id: string;
+  code: string;
+  name: string;
+  category: MaterialCategory;
+  supplier: string;
+  sheetLengthMm: number;
+  sheetWidthMm: number;
+  thicknessMm: number;
+  costPerSheet: number;
+  wastagePct: number;
+  grainDirection: GrainDirection;
+  active: boolean;
+  leadTimeDays: number;
+}
+
+export interface HardwareListItem {
+  id: string;
+  code: string;
+  name: string;
+  category: HardwareCategory;
+  supplier: string;
+  unitCost: number;
+  uom: string;
+  finish?: string;
+  loadRating?: string;
+  minStockLevel: number;
+  reorderQty: number;
+  active: boolean;
+}
+
+export interface MaterialKpis {
+  total: number;
+  active: number;
+  discontinued: number;
+  avgCostPerSheet: number;
+  byCategory: Partial<Record<MaterialCategory, number>>;
+}
+
+export interface HardwareKpis {
+  total: number;
+  active: number;
+  avgUnitCost: number;
+  byCategory: Partial<Record<HardwareCategory, number>>;
+}
+
+export interface CutListSummary {
+  totalParts: number;
+  totalQty: number;
+  uniqueMaterials: number;
+  estimatedSheets: number;
+}
+
+// ─── API response shapes ───────────────────────────────────────────────────────
+
 export interface ProjectsListResponse {
   data: ProjectListItem[];
-  meta: {
-    total: number;
-    page: number;
-    pageSize: number;
-  };
+  meta: { total: number; page: number; pageSize: number };
 }
 
 export interface ProjectDetailResponse {
   data: Project;
 }
-
-// ─── Dashboard KPI types ───────────────────────────────────────────────────────
 
 export interface ProjectKpis {
   totalActive: number;
@@ -101,5 +238,5 @@ export interface ProjectKpis {
   inProduction: number;
   overdueCount: number;
   byStatus: Record<ProjectStatus, number>;
-  quoteConversionRate: number;   // percentage 0–100
+  quoteConversionRate: number;
 }

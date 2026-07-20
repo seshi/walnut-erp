@@ -30,6 +30,38 @@ enum UserRole {
   viewer
 }
 
+enum MaterialCategory {
+  board
+  veneer
+  solid_timber
+  laminate
+  glass
+  edge_banding
+}
+
+enum GrainDirection {
+  none
+  length
+  width
+}
+
+enum HardwareCategory {
+  hinges
+  drawer_runners
+  handles_knobs
+  legs
+  shelf_pins
+  soft_close
+  lighting
+  other
+}
+
+enum CutListStatus {
+  draft
+  approved
+  superseded
+}
+
 // ─── Models ───────────────────────────────────────────────────────────────────
 
 model User {
@@ -41,9 +73,10 @@ model User {
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 
-  designedProjects  Project[] @relation("Designer")
-  managedProjects   Project[] @relation("ProductionManager")
-  createdProjects   Project[] @relation("CreatedBy")
+  designedProjects   Project[]        @relation("Designer")
+  managedProjects    Project[]        @relation("ProductionManager")
+  createdProjects    Project[]        @relation("CreatedBy")
+  generatedCutLists  CutListVersion[] @relation("CutListGenerator")
 }
 
 model Customer {
@@ -59,18 +92,17 @@ model Customer {
 }
 
 model Project {
-  id              String        @id @default(cuid())
-  projectCode     String        @unique
-  siteAddress     String
-  status          ProjectStatus @default(enquiry)
-  enquiryDate     DateTime      @db.Date
-  startDate       DateTime      @db.Date
-  deliveryDate    DateTime      @db.Date
-  // Stored as whole pounds (GBP). Migrate to pence (Int) when invoicing is wired.
-  estimatedValue  Int
-  internalNotes   String?
-  createdAt       DateTime      @default(now())
-  updatedAt       DateTime      @updatedAt
+  id                  String        @id @default(cuid())
+  projectCode         String        @unique
+  siteAddress         String
+  status              ProjectStatus @default(enquiry)
+  enquiryDate         DateTime      @db.Date
+  startDate           DateTime      @db.Date
+  deliveryDate        DateTime      @db.Date
+  estimatedValue      Int
+  internalNotes       String?
+  createdAt           DateTime      @default(now())
+  updatedAt           DateTime      @updatedAt
 
   customerId          String
   customer            Customer @relation(fields: [customerId], references: [id])
@@ -84,7 +116,8 @@ model Project {
   createdById         String
   createdBy           User     @relation("CreatedBy", fields: [createdById], references: [id])
 
-  rooms Room[]
+  rooms               Room[]
+  cutListVersions     CutListVersion[]
 }
 
 model Room {
@@ -93,4 +126,81 @@ model Room {
   sequenceOrder Int
   projectId     String
   project       Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+}
+
+model Material {
+  id               String           @id @default(cuid())
+  code             String           @unique
+  name             String
+  category         MaterialCategory
+  supplier         String
+  sheetLengthMm    Int
+  sheetWidthMm     Int
+  thicknessMm      Int
+  costPerSheet     Float
+  wastagePct       Float            @default(10)
+  grainDirection   GrainDirection   @default(none)
+  edgeBandingCodes String[]
+  active           Boolean          @default(true)
+  minOrderQty      Int              @default(1)
+  leadTimeDays     Int              @default(14)
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+
+  cutListItems CutListItem[]
+}
+
+model Hardware {
+  id            String           @id @default(cuid())
+  code          String           @unique
+  name          String
+  category      HardwareCategory
+  supplier      String
+  unitCost      Float
+  uom           String
+  finish        String?
+  loadRating    String?
+  minStockLevel Int              @default(0)
+  reorderQty    Int              @default(10)
+  active        Boolean          @default(true)
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
+}
+
+model CutListVersion {
+  id          String        @id @default(cuid())
+  versionNo   Int
+  status      CutListStatus @default(draft)
+  generatedAt DateTime      @default(now())
+
+  projectId   String
+  project     Project @relation(fields: [projectId], references: [id])
+
+  generatedBy String
+  generator   User    @relation("CutListGenerator", fields: [generatedBy], references: [id])
+
+  items CutListItem[]
+
+  @@unique([projectId, versionNo])
+}
+
+model CutListItem {
+  id          String         @id @default(cuid())
+  partCode    String
+  description String
+  lengthMm    Int
+  widthMm     Int
+  thicknessMm Int
+  qty         Int
+  grainDir    GrainDirection @default(none)
+  edgeBanding String         @default("")
+  finish      String?
+  cabinetRef  String?
+  notes       String?
+
+  versionId String
+  version   CutListVersion @relation(fields: [versionId], references: [id], onDelete: Cascade)
+
+  materialId String
+  material   Material @relation(fields: [materialId], references: [id])
 }

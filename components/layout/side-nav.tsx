@@ -17,15 +17,15 @@ import {
 import { cn } from "@/lib/utils";
 
 const navItems = [
-  { href: "/projects", label: "Projects", icon: FolderOpen, active: true },
-  { href: "#", label: "Dashboard", icon: LayoutDashboard, active: false },
-  { href: "#", label: "Materials", icon: Package, active: false },
-  { href: "#", label: "Hardware", icon: Wrench, active: false },
-  { href: "#", label: "Cut Lists", icon: ClipboardList, active: false },
-  { href: "#", label: "Production", icon: ShoppingCart, active: false },
-  { href: "#", label: "Inventory", icon: Boxes, active: false },
-  { href: "#", label: "Purchasing", icon: TruckIcon, active: false },
-  { href: "#", label: "Users", icon: Users, active: false },
+  { href: "/projects",  label: "Projects",   icon: FolderOpen,    active: true  },
+  { href: "#",          label: "Dashboard",  icon: LayoutDashboard, active: false },
+  { href: "/materials", label: "Materials",  icon: Package,       active: true  },
+  { href: "/hardware",  label: "Hardware",   icon: Wrench,        active: true  },
+  { href: "#",          label: "Cut Lists",  icon: ClipboardList, active: false },
+  { href: "#",          label: "Production", icon: ShoppingCart,  active: false },
+  { href: "#",          label: "Inventory",  icon: Boxes,         active: false },
+  { href: "#",          label: "Purchasing", icon: TruckIcon,     active: false },
+  { href: "#",          label: "Users",      icon: Users,         active: false },
 ];
 
 export function SideNav() {
