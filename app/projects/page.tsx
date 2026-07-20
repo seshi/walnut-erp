@@ -1,7 +1,7 @@
 import { KpiTiles } from "@/components/projects/kpi-tiles";
 import { ProjectList } from "@/components/projects/project-list";
 import { Button } from "@/components/ui/button";
-import { getProjectKpis, getProjectListItems } from "@/lib/mock-data";
+import { getProjectKpis, getProjectListItems } from "@/lib/project-store";
 import { Plus } from "lucide-react";
 
 export const metadata = { title: "Projects – Walnut Studios ERP" };

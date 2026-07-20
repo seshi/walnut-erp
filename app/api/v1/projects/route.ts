@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getProjectListItems, getProjectKpis } from "@/lib/mock-data";
+import { getProjectListItems } from "@/lib/project-store";
 import type { ProjectsListResponse } from "@/lib/types";
 
 /**

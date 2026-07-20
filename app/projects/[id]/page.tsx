@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { getProjectById } from "@/lib/mock-data";
+import { findProject } from "@/lib/project-store";
 import { StatusBadge } from "@/components/projects/status-badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -20,7 +20,7 @@ import {
 } from "lucide-react";
 
 export async function generateMetadata({ params }: { params: { id: string } }) {
-  const project = getProjectById(params.id);
+  const project = findProject(params.id);
   return { title: project ? `${project.projectCode} – Walnut Studios ERP` : "Project not found" };
 }
 
@@ -68,7 +68,7 @@ function StatusTimeline({ current }: { current: string }) {
 }
 
 export default function ProjectDetailPage({ params }: { params: { id: string } }) {
-  const project = getProjectById(params.id);
+  const project = findProject(params.id);
   if (!project) notFound();
 
   return (
@@ -100,7 +100,9 @@ export default function ProjectDetailPage({ params }: { params: { id: string } }
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm">Edit Project</Button>
+          <Button variant="outline" size="sm" asChild>
+            <Link href={`/projects/${project.id}/edit`}>Edit Project</Link>
+          </Button>
           <Button size="sm">Generate Cut List</Button>
         </div>
       </div>
